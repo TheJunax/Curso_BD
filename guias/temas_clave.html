@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Temas clave — Curso de Bases de Datos (PostgreSQL)</title>
+<style>
+  :root{
+    --bg:#0b1220;
+    --bg-soft:#0f1729;
+    --card:#151f36;
+    --card-2:#1a2743;
+    --line:#26344f;
+    --text:#e6edf7;
+    --muted:#94a6c2;
+    --green:#22c55e;
+    --blue:#3b82f6;
+    --amber:#f59e0b;
+    --red:#ef4444;
+    --purple:#a78bfa;
+    --cyan:#22d3ee;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Ubuntu,sans-serif;
+    background:
+      radial-gradient(1200px 600px at 15% -10%, #16233f 0%, transparent 60%),
+      radial-gradient(900px 500px at 100% 0%, #122b33 0%, transparent 55%),
+      var(--bg);
+    color:var(--text);
+    line-height:1.55;
+  }
+  a{color:var(--cyan);text-decoration:none}
+  a:hover{text-decoration:underline}
+  code,pre{font-family:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+
+  .wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+
+  /* ---------- Header ---------- */
+  header{padding:44px 0 26px}
+  .kicker{
+    display:inline-block;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--cyan);border:1px solid #164e5a;background:#0c2a33;
+    padding:5px 10px;border-radius:999px;margin-bottom:14px;
+  }
+  h1{margin:0 0 8px;font-size:clamp(1.7rem,4vw,2.6rem);line-height:1.15;letter-spacing:-.02em}
+  h1 span{color:var(--cyan)}
+  .sub{color:var(--muted);max-width:70ch;margin:0 0 24px}
+
+  .progress-box{
+    background:linear-gradient(180deg,var(--card),var(--bg-soft));
+    border:1px solid var(--line);border-radius:16px;padding:18px 20px;
+    display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center;
+  }
+  .progress-label{display:flex;justify-content:space-between;font-size:.85rem;color:var(--muted);margin-bottom:8px}
+  .progress-label b{color:var(--text)}
+  .bar{height:10px;background:#0a1120;border-radius:999px;overflow:hidden;border:1px solid #1d2a44}
+  .bar > i{display:block;height:100%;width:26.7%;border-radius:999px;
+    background:linear-gradient(90deg,var(--green),var(--cyan));}
+  .stats{display:flex;gap:10px;flex-wrap:wrap}
+  .stat{background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:8px 12px;text-align:center;min-width:74px}
+  .stat b{display:block;font-size:1.15rem;line-height:1.1}
+  .stat span{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+
+  /* ---------- Nav ---------- */
+  .navbar{
+    position:sticky;top:0;z-index:50;background:rgba(11,18,32,.88);
+    backdrop-filter:blur(10px);border-bottom:1px solid var(--line);
+  }
+  .navbar .wrap{display:flex;gap:14px;align-items:center;padding-top:10px;padding-bottom:10px;flex-wrap:wrap}
+  .navlinks{display:flex;gap:4px;flex-wrap:wrap;flex:1}
+  .navlinks a{
+    font-size:.8rem;color:var(--muted);padding:6px 9px;border-radius:8px;white-space:nowrap;
+  }
+  .navlinks a:hover{background:var(--card);color:var(--text);text-decoration:none}
+  .search{position:relative}
+  .search input{
+    background:var(--card);border:1px solid var(--line);color:var(--text);
+    padding:9px 12px 9px 32px;border-radius:10px;font-size:.85rem;width:230px;outline:none;
+  }
+  .search input:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(34,211,238,.12)}
+  .search svg{position:absolute;left:9px;top:50%;transform:translateY(-50%);opacity:.55}
+
+  /* ---------- Sections ---------- */
+  section{padding:34px 0;scroll-margin-top:70px}
+  .sec-head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+  h2{font-size:1.35rem;margin:0;letter-spacing:-.01em}
+  .sec-head .phase-tag{font-size:.72rem;color:var(--muted);border:1px solid var(--line);padding:3px 9px;border-radius:999px}
+  .sec-sub{color:var(--muted);font-size:.92rem;margin:0 0 20px;max-width:80ch}
+
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 18px}
+  .chip{
+    cursor:pointer;font-size:.78rem;padding:6px 12px;border-radius:999px;
+    background:var(--card);border:1px solid var(--line);color:var(--muted);user-select:none;
+  }
+  .chip:hover{color:var(--text)}
+  .chip.active{background:#0e2a35;border-color:#1d6b7d;color:var(--cyan)}
+  #count{font-size:.78rem;color:var(--muted);align-self:center;margin-left:4px}
+
+  /* ---------- Topic cards ---------- */
+  .topic{
+    background:linear-gradient(180deg,var(--card),var(--bg-soft));
+    border:1px solid var(--line);border-left:4px solid var(--line);
+    border-radius:14px;padding:20px 22px;margin-bottom:16px;
+  }
+  .topic.done{border-left-color:var(--green)}
+  .topic.next{border-left-color:var(--blue)}
+  .topic.pending{border-left-color:#3a4a67}
+  .topic-head{display:flex;align-items:center;gap:12px;margin-bottom:8px;flex-wrap:wrap}
+  .num{
+    font-size:.72rem;font-weight:700;color:var(--muted);background:#0a1120;
+    border:1px solid var(--line);border-radius:8px;padding:3px 8px;letter-spacing:.04em;
+  }
+  .topic h3{margin:0;font-size:1.05rem;flex:1;min-width:220px}
+  .badge{font-size:.7rem;font-weight:600;padding:3px 10px;border-radius:999px;letter-spacing:.03em;white-space:nowrap}
+  .badge.done{background:rgba(34,197,94,.12);color:var(--green);border:1px solid rgba(34,197,94,.35)}
+  .badge.next{background:rgba(59,130,246,.12);color:#7fb2ff;border:1px solid rgba(59,130,246,.4)}
+  .badge.pending{background:rgba(148,166,194,.08);color:var(--muted);border:1px solid var(--line)}
+  .lead{color:var(--muted);font-size:.9rem;margin:0 0 14px}
+
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media (max-width:760px){.grid{grid-template-columns:1fr}}
+  .topic h4{margin:0 0 6px;font-size:.76rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
+  .topic ul{margin:0;padding-left:18px;font-size:.88rem}
+  .topic li{margin:3px 0}
+  .topic li b{color:var(--text)}
+  ul.warn li::marker{color:var(--amber)}
+  ul.warn li{color:#d9c7a3}
+
+  pre{
+    background:#070d19;border:1px solid #1b2942;border-radius:10px;
+    padding:14px 16px;overflow:auto;font-size:.82rem;line-height:1.5;margin:14px 0 0;
+  }
+  pre code{color:#c9e4ff}
+  .cmt{color:#5f7a9e}
+  .kw{color:#c792ea}
+  .str{color:#a5d6a7}
+
+  /* ---------- ER block ---------- */
+  .er-box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px}
+  .er-box pre{background:#060c17}
+
+  /* ---------- Tables ---------- */
+  .table-wrap{overflow:auto;border:1px solid var(--line);border-radius:12px}
+  table{border-collapse:collapse;width:100%;font-size:.84rem;min-width:560px}
+  th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+  th{background:var(--card-2);font-size:.72rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);position:sticky;top:0}
+  tr:last-child td{border-bottom:none}
+  td:first-child{white-space:nowrap;color:var(--cyan);font-size:.78rem}
+  td.fix{color:#a8e6b8}
+
+  /* ---------- Callout ---------- */
+  .callout{
+    background:#0d2233;border:1px solid #1b4a63;border-left:4px solid var(--cyan);
+    border-radius:12px;padding:14px 18px;font-size:.88rem;margin:16px 0;
+  }
+  .callout b{color:var(--cyan)}
+  .callout.warn{background:#2a2110;border-color:#5a4416;border-left-color:var(--amber)}
+  .callout.warn b{color:var(--amber)}
+
+  /* ---------- Checklist ---------- */
+  .check{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  @media (max-width:760px){.check{grid-template-columns:1fr}}
+  .check li{
+    background:var(--card-2);border:1px solid var(--line);border-radius:10px;
+    padding:9px 12px;font-size:.86rem;display:flex;gap:9px;align-items:flex-start;
+  }
+  .check li::before{content:"○";color:var(--amber);font-weight:700}
+  .check li.ok::before{content:"✓";color:var(--green)}
+
+  /* ---------- Footer ---------- */
+  footer{border-top:1px solid var(--line);margin-top:30px;padding:26px 0 40px;color:var(--muted);font-size:.82rem}
+  footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+
+  .to-top{
+    position:fixed;right:18px;bottom:18px;z-index:60;
+    width:42px;height:42px;border-radius:12px;border:1px solid var(--line);
+    background:var(--card);color:var(--text);cursor:pointer;font-size:1.1rem;
+    display:none;
+  }
+  .to-top.show{display:block}
+
+  @media print{
+    .navbar,.to-top,.chips,.search{display:none!important}
+    body{background:#fff;color:#111}
+    .topic,.er-box,.table-wrap{border-color:#ccc;background:#fff}
+    .lead,.sub{color:#444}
+    pre{background:#f4f4f4;border-color:#ddd}
+    pre code{color:#111}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <span class="kicker">Curso de Bases de Datos · PostgreSQL 16</span>
+    <h1>Temas clave de <span>Bases de Datos</span></h1>
+    <p class="sub">Mapa completo de la ruta: los 4 temas que ya llevamos, los que vienen y los conceptos que hay que tener a mano. Actualizado el 11 de noviembre de 2026.</p>
+
+    <div class="progress-box">
+      <div>
+        <div class="progress-label"><span>Progreso de la ruta</span><span><b>4 / 15</b> temas</span></div>
+        <div class="bar"><i></i></div>
+      </div>
+      <div class="stats">
+        <div class="stat"><b>4</b><span>Temas</span></div>
+        <div class="stat"><b>4</b><span>Checkpoints</span></div>
+        <div class="stat"><b>15</b><span>Errores</span></div>
+        <div class="stat"><b>1</b><span>Repaso</span></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<nav class="navbar">
+  <div class="wrap">
+    <div class="navlinks">
+      <a href="#resumen">Resumen</a>
+      <a href="#fase1">Fase 1</a>
+      <a href="#fase2">Fase 2</a>
+      <a href="#fase3">Fase 3</a>
+      <a href="#fase4">Fase 4</a>
+      <a href="#er-uni">ER universidad</a>
+      <a href="#errores">Errores</a>
+      <a href="#comandos">Comandos</a>
+    </div>
+    <div class="search">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a6c2" stroke-width="2">
+        <circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>
+      </svg>
+      <input id="q" type="search" placeholder="Buscar tema o concepto…  ( / )" autocomplete="off">
+    </div>
+  </div>
+</nav>
+
+<main class="wrap">
+
+  <!-- ================= RESUMEN ================= -->
+  <section id="resumen">
+    <div class="sec-head"><h2>Resumen de la ruta</h2><span class="phase-tag">estado actual</span></div>
+    <p class="sec-sub">El curso va en cuatro fases. Cada tema se cierra con práctica real en PostgreSQL y un checkpoint de comprensión.</p>
+
+    <div class="grid">
+      <div class="topic done">
+        <div class="topic-head"><span class="num">F1</span><h3>Fundamentos y modelo relacional</h3><span class="badge done">Completada</span></div>
+        <ul>
+          <li>Fundamentos y PostgreSQL</li>
+          <li>Modelo relacional y claves</li>
+          <li>Álgebra relacional</li>
+        </ul>
+      </div>
+      <div class="topic next">
+        <div class="topic-head"><span class="num">F2</span><h3>Diseño</h3><span class="badge next">En curso</span></div>
+        <ul>
+          <li>Modelado Entidad-Relación (cerrado)</li>
+          <li>Mapeo ER → relacional (siguiente)</li>
+          <li>Normalización</li>
+        </ul>
+      </div>
+      <div class="topic pending">
+        <div class="topic-head"><span class="num">F3</span><h3>SQL</h3><span class="badge pending">Pendiente</span></div>
+        <ul>
+          <li>DDL y DML</li>
+          <li>Consultas, JOINs y agregación</li>
+          <li>Subconsultas, vistas, índices y transacciones</li>
+        </ul>
+      </div>
+      <div class="topic pending">
+        <div class="topic-head"><span class="num">F4</span><h3>Cierre</h3><span class="badge pending">Pendiente</span></div>
+        <ul>
+          <li>Proyecto integrador</li>
+          <li>Diseño, normalización, DDL, consultas, índices y transacciones</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout">
+      <b>Cómo usar esta página:</b> busca por palabra (atajo <code>/</code>) o filtra por estado con los botones. Cada tema trae concepto, puntos clave, un ejemplo y las trampas típicas. Los temas pendientes son un adelanto de lo que viene, no relleno.
+    </div>
+  </section>
+
+  <!-- ================= FASE 1 ================= -->
+  <section id="fase1">
+    <div class="sec-head"><h2>Fase 1 — Fundamentos y modelo relacional</h2><span class="phase-tag">3 / 3 completados</span></div>
+    <p class="sec-sub">Vocabulario, claves, integridad y el álgebra que explica por qué el SQL se escribe así.</p>
+
+    <div class="chips">
+      <span class="chip active" data-status="all">Todos</span>
+      <span class="chip" data-status="done">Completados</span>
+      <span class="chip" data-status="next">Siguiente</span>
+      <span class="chip" data-status="pending">Pendientes</span>
+      <span id="count"></span>
+    </div>
+
+    <article class="topic done" data-status="done">
+      <div class="topic-head"><span class="num">01</span><h3>Fundamentos y PostgreSQL</h3><span class="badge done">Completado</span></div>
+      <p class="lead">La base son los datos; el SGBD es el software que los gestiona; <code>psql</code> es solo la puerta de entrada.</p>
+      <div class="grid">
+        <div>
+          <h4>Conceptos clave</h4>
+          <ul>
+            <li><b>Base de datos:</b> colección organizada de datos (<code>curso_bd</code>).</li>
+            <li><b>SGBD:</b> software que la administra (PostgreSQL).</li>
+            <li><b>Cliente:</b> <code>psql</code> o pgAdmin.</li>
+            <li><b>Tabla:</b> filas y columnas; cada columna tiene tipo y dominio.</li>
+            <li><b>NULL:</b> ausencia de valor; no es <code>0</code> ni <code>''</code>.</li>
+            <li>SQL es <b>declarativo</b>: dices qué quieres, no cómo recorrerlo.</li>
+          </ul>
+        </div>
+        <div>
+          <h4>Ojo con</h4>
+          <ul class="warn">
+            <li><code>NULL = NULL</code> no da verdadero → usar <code>IS NULL</code>.</li>
+            <li><code>COUNT(*)</code> cuenta filas; <code>COUNT(columna)</code> ignora NULL.</li>
+            <li>Entrar sin cargar <code>env.sh</code> → intenta el puerto 5432 y falla.</li>
+          </ul>
+        </div>
+      </div>
+<pre><code><span class="cmt">-- dentro de psql</span>
+\dt                 <span class="cmt">-- lista las tablas</span>
+\d estudiantes      <span class="cmt">-- describe columnas, tipos y restricciones</span>
+\q                  <span class="cmt">-- salir</span>
+
+SELECT nombre, ciudad
+FROM estudiantes
+ORDER BY nombre
+LIMIT 5;</code></pre>
+    </article>
+
+    <article class="topic done" data-status="done">
+      <div class="topic-head"><span class="num">02</span><h3>Modelo relacional y claves</h3><span class="badge done">Completado</span></div>
+      <p class="lead">El vocabulario formal y las reglas que impiden datos huérfanos o duplicados.</p>
+      <div class="grid">
+        <div>
+          <h4>Conceptos clave</h4>
+          <ul>
+            <li>relación = tabla · tupla = fila · atributo = columna · dominio = tipo.</li>
+            <li><b>Superclave ⊇ candidata ⊇ primaria.</b> Alterna = candidata no elegida.</li>
+            <li><b>Compuesta:</b> dos o más columnas, ej. <code>(id_pedido, id_producto)</code>.</li>
+            <li><b>Foránea:</b> apunta a la PK de otra tabla; garantiza integridad referencial.</li>
+            <li><b>Integridad:</b> de entidad (PK no nula), referencial (FK válida), de dominio (tipo/CHECK).</li>
+            <li><b>ON DELETE:</b> <code>CASCADE</code> borra hijos · <code>RESTRICT</code> bloquea · <code>SET NULL</code> deja la FK nula.</li>
+          </ul>
+        </div>
+        <div>
+          <h4>Ojo con</h4>
+          <ul class="warn">
+            <li>Confundir <code>CASCADE</code> con <code>SET NULL</code>: uno borra, el otro conserva.</li>
+            <li>FK sin índice → borrados y joins lentos.</li>
+            <li>Una FK debe apuntar a PK o a una columna <code>UNIQUE</code>.</li>
+          </ul>
+        </div>
+      </div>
+<pre><code>\d detalle_pedido
+
+<span class="cmt">-- PK compuesta + dos FK</span>
+<span class="kw">PRIMARY KEY</span> (id_pedido, id_producto)
+<span class="kw">REFERENCES</span> pedidos(id)   <span class="kw">ON DELETE CASCADE</span>
+<span class="kw">REFERENCES</span> productos(id) <span class="kw">ON DELETE RESTRICT</span></code></pre>
+    </article>
+
+    <article class="topic done" data-status="done">
+      <div class="topic-head"><span class="num">03</span><h3>Álgebra relacional</h3><span class="badge done">Completado</span></div>
+      <p class="lead">El "por qué" del SQL: cada operación del álgebra tiene su cláusula.</p>
+      <div class="grid">
+        <div>
+          <h4>Conceptos clave</h4>
+          <ul>
+            <li><b>σ (selección)</b> → <code>WHERE</code>.</li>
+            <li><b>π (proyección)</b> → columnas del <code>SELECT</code> (el <code>FROM</code> no es ninguna).</li>
+            <li><b>∪ ∩ −</b> → <code>UNION</code> / <code>INTERSECT</code> / <code>EXCEPT</code>.</li>
+            <li><code>UNION</code> elimina duplicados (conjuntos); <code>UNION ALL</code> los conserva (bolsas).</li>
+            <li><b>×</b> → <code>CROSS JOIN</code>; <b>θ-join</b> → <code>JOIN ... ON</code> = σ(×).</li>
+            <li>JOIN combina <b>horizontal</b>; UNION apila <b>vertical</b>.</li>
+          </ul>
+        </div>
+        <div>
+          <h4>Ojo con</h4>
+          <ul class="warn">
+            <li><code>JOIN</code> sin <code>ON</code> es error de sintaxis; el producto es <code>CROSS JOIN</code>.</li>
+            <li>Emparejar por <code>id = id</code> en vez de FK ↔ PK: no falla, pero <b>miente</b>.</li>
+            <li>Regla de oro: el join se hace por <b>FK ↔ PK</b>.</li>
+          </ul>
+        </div>
+      </div>
+<pre><code><span class="cmt">-- estudiantes con sus cursos y nota</span>
+<span class="kw">SELECT</span> e.nombre, c.nombre, m.nota
+<span class="kw">FROM</span> estudiantes e
+<span class="kw">JOIN</span> matriculas m <span class="kw">ON</span> m.id_estudiante = e.id
+<span class="kw">JOIN</span> cursos c     <span class="kw">ON</span> c.id = m.id_curso
+<span class="kw">WHERE</span> m.nota &gt;= 4;</code></pre>
+    </article>
+  </section>
+
+  <!-- ================= FASE 2 ================= -->
+  <section id="fase2">
+    <div class="sec-head"><h2>Fase 2 — Diseño</h2><span class="phase-tag">1 / 3 completados</span></div>
+    <p class="sec-sub">Modelar antes de crear tablas: el ER, su traducción a tablas y la normalización que elimina redundancia.</p>
+
+    <article class="topic done" data-status="done">
+      <div class="topic-head"><span class="num">04</span><h3>Modelado Entidad-Relación (ER/EER)</h3><span class="badge done">Completado</span></div>
+      <p class="lead">El plano antes de construir: entidades, atributos, relaciones y reglas de participación.</p>
+      <div class="grid">
+        <div>
+          <h4>Conceptos clave</h4>
+          <ul>
+            <li><b>Entidad fuerte</b> tiene identidad propia; <b>débil</b> depende de otra (clave parcial).</li>
+            <li><b>Atributos:</b> simple, compuesto, multivaluado, derivado.</li>
+            <li><b>Cardinalidad por lado:</b> cada extremo lleva un solo símbolo, <code>1</code> o <code>N</code>.</li>
+            <li><b>Participación:</b> total si toda instancia debe participar; parcial si puede no hacerlo.</li>
+            <li><b>N:M</b> → rombo con N/N; si tiene atributos propios, van en el rombo.</li>
+            <li>Multivaluado → tabla aparte; derivado → se calcula, no se guarda.</li>
+          </ul>
+        </div>
+        <div>
+          <h4>Ojo con</h4>
+          <ul class="warn">
+            <li><b>Matrícula</b> y <b>prerrequisito</b> son relaciones N:M, no entidades.</li>
+            <li>"Estudiante con varios cursos" no es multivaluado: CURSO es entidad.</li>
+            <li>"1:1 por lado" no existe: cada lado lleva 1 o N.</li>
+            <li>Participación: FK <code>NOT NULL</code> ↔ total; nullable ↔ parcial.</li>
+            <li>El modelo manda sobre la foto de datos del momento.</li>
+          </ul>
+        </div>
+      </div>
+      <p class="lead" style="margin:14px 0 0">El modelo completo de universidad está más abajo, en <a href="#er-uni">ER universidad</a>.</p>
+    </article>
+
+    <article class="topic next" data-status="next">
+      <div class="topic-head"><span class="num">05</span><h3>Mapeo ER → modelo relacional</h3><span class="badge next">Siguiente</span></div>
+      <p class="lead">Cada figura del diagrama tiene una traducción mecánica a tablas. Aquí el ER se vuelve DDL.</p>
+      <div class="grid">
+        <div>
+          <h4>Reglas de traducción</h4>
+          <ul>
+            <li><b>Entidad</b> → tabla con su PK.</li>
+            <li><b>1:N</b> → FK en el lado <b>N</b>.</li>
+            <li><b>N:M</b> → tabla puente (PK compuesta, o <code>id</code> + <code>UNIQUE</code>).</li>
+            <li><b>1:1</b> → FK + <code>UNIQUE</code> (o fusionar las tablas).</li>
+            <li><b>Multivaluado</b> → tabla aparte.</li>
+            <li><b>Débil</b> → PK compuesta (dueño + clave parcial).</li>
+            <li><b>Jerarquía</b> → tabla única con discriminador o tablas separadas.</li>
+          </ul>
+        </div>
+        <div>
+          <h4>Ojo con</h4>
+          <ul class="warn">
+            <li>Poner la FK en el lado equivocado de un 1:N.</li>
+            <li>Olvidar el <code>UNIQUE</code> en un 1:1 (se vuelve 1:N sin querer).</li>
+            <li>Crear tabla puente sin PK: se permiten duplicados.</li>
+            <li>La tabla puente es <b>consecuencia</b> del N:M, no una entidad nueva.</li>
+          </ul>
+        </div>
+      </div>
+<pre><code><span class="cmt">-- N:M estudiante ↔ curso, con atributos</span>
+<span class="kw">CREATE TABLE</span> matriculas (
+  id_estudiante <span class="kw">INT</span> <span class="kw">REFERENCES</span> estudiantes(id),
+  id_curso      <span class="kw">INT</span> <span class="kw">REFERENCES</span> cursos(id),
+  semestre      <span class="kw">VARCHAR</span>(10) <span class="kw">NOT NULL</span>,
+  nota          <span class="kw">NUMERIC</span>(3,1),
+  <span class="kw">PRIMARY KEY</span> (id_estudiante, id_curso, semestre)
+);</code></pre>
+    </article>
+
+    <article class="topic pending" data-status="pending">
+      <div class="topic-head"><span class="num">06</span><h3>Normalización (1FN → BCNF)</h3><span class="badge pending">Pendiente</span></div>
+      <p class="lead">Quitar redundancia para que una sola verdad no se pueda contradecir.</p>
+      <div class="grid">
+        <div>
+          <h4>Conceptos clave</h4>
+          <ul>
+            <li><b>Dependencia funcional:</b> X → Y (X determina Y).</li>
+            <li><b>1FN:</b> valores atómicos, sin listas en una celda.</li>
+            <li><b>2FN:</b> sin dependencias parciales de una clave compuesta.</li>
+            <li><b>3FN:</b> sin dependencias transitivas (no clave → no clave).</li>
+            <li><b>BCNF:</b> todo determinante es superclave.</li>
+            <li><b>Anomalías:</b> de inserción, actualización y borrado.</li>
+          </ul>
+        </div>
+        <div>
+          <h4>Ojo con</h4>
+          <ul class="warn">
+            <li>Normalizar de menos: ciudad repetida en cada pedido.</li>
+            <li>Normalizar de más: joins innecesarios por miedo a repetir.</li>
+            <li>Un precio histórico congelado <b>no</b> es redundancia: es dato de negocio.</li>
+          </ul>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <!-- ================= FASE 3 ================= -->
+  <section id="fase3">
+    <div class="sec-head"><h2>Fase 3 — SQL</h2><span class="phase-tag">0 / 8 completados</span></div>
+    <p class="sec-sub">De crear el esquema a consultarlo con joins, agregación, subconsultas, índices y transacciones.</p>
+
+    <article class="topic pending" data-status="pending">
+      <div class="topic-head"><span class="num">07</span><h3>DDL — definir el esquema</h3><span class="badge pending">Pendiente</span></div>
+      <p class="lead">Construir tablas con reglas que la base haga cumplir solita.</p>
+      <div class="grid">
+        <div>
+          <h4>Conceptos clave</h4>
+          <ul>
+            <li><b>Tipos:</b> <code>INT</code>, <code>GENERATED AS IDENTITY</code>, <code>VARCHAR</code>/<code>TEXT</code>, <code>NUMERIC</code>, <code>DATE</code>, <code>TIMESTAMP</code>, <code>BOOLEAN</code>.</li>
+            <li><b>Restricciones:</b> <code>PRIMARY KEY</code>, <code>FOREIGN KEY</code>, <code>UNIQUE</code>, <code>NOT NULL</code>, <code>CHECK</code>, <code>DEFAULT</code>.</li>
+            <li><code>ALTER TABLE</code> y <code>DROP TABLE</code>.</li>
+            <li><code>ON DELETE CASCADE</code> vs <code>RESTRICT</code>.</li>
+          </ul>
+        </div>
+        <div>
+          <h4>Ojo con</h4>
+          <ul class="warn">
+            <li>Dinero en <code>FLOAT</code>: siempre <code>NUMERIC</code>.</li>
+            <li><code>VARCHAR(n)</code> más corto de lo necesario → error de longitud.</li>
+            <li><code>SERIAL</code> vs <code>GENERATED ... AS IDENTITY</code> (preferir identity).</li>
+          </ul>
+        </div>
+      </div>
+<pre><code><span class="kw">CREATE TABLE</span> cursos (
+  id          <span class="kw">INT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY</span>,
+  codigo      <span class="kw">VARCHAR</span>(12) <span class="kw">NOT NULL UNIQUE</span>,
+  nombre      <span class="kw">VARCHAR</span>(120) <span class="kw">NOT NULL</span>,
+  creditos    <span class="kw">SMALLINT NOT NULL CHECK</span> (creditos <span class="kw">BETWEEN</span> 1 <span class="kw">AND</span> 10),
+  id_profesor <span class="kw">INT REFERENCES</span> profesores(id) <span class="kw">ON DELETE SET NULL</span>
+);</code></pre>
+    </article>
+
+    <article class="topic pending" data-status="pending">
+      <div class="topic-head"><span class="num">08</span><h3>DML — mover datos</h3><span class="badge pending">Pendiente</span></div>
+      <p class="lead">Insertar, actualizar y borrar sin romper la integridad.</p>
+      <div class="grid">
+        <div>
+          <h4>Conceptos clave</h4>
+          <ul>
+            <li><code>INSERT ... RETURNING</code> para ver lo insertado.</li>
+            <li><code>UPDATE ... WHERE</code> y <code>DELETE ... WHERE</code>.</li>
+            <li>Cada sentencia es una transacción implícita.</li>
+            <li>La FK se respeta: no puedes insertar un hijo sin padre.</li>
+          </ul>
+        </div>
+        <div>
+          <h4>Ojo con</h4>
+          <ul class="warn">
+            <li><code>UPDATE</code>/<code>DELETE</code> sin <code>WHERE</code>: se va todo.</li>
+            <li>Probar el <code>WHERE</code> con un <code>SELECT</code> antes de borrar.</li>
+          </ul>
+        </div>
+      </div>
+<pre><code><span class="kw">UPDATE</span> estudiantes
+<span class="kw">SET</span> ciudad = <span class="str">'Sincelejo'</span>
+<span class="kw">WHERE</span> id = 7
+<span class="kw">RETURNING</span> id, nombre, ciudad;</code></pre>
+    </article>
+
+    <article class="topic pending" data-status="pending">
+      <div class="topic-head"><span class="num">09</span><h3>Consultas básicas</h3><span class="badge pending">Pendiente</span></div>
+      <p class="lead">Filtrar, ordenar, paginar y manejar NULL sin sorpresas.</p>
+      <div class="grid">
+        <div>
+          <h4>Conceptos clave</h4>
+          <ul>
+            <li><code>WHERE</code>, <code>ORDER BY</code>, <code>LIMIT</code>/<code>OFFSET</code>, <code>DISTINCT</code>.</li>
+            <li>Operadores: <code>=</code>, <code>&lt;&gt;</code>, <code>&gt;</code>, <code>&lt;</code>, <code>BETWEEN</code>, <code>LIKE</code>, <code>IN</code>.</li>
+            <li><code>IS NULL</code>, <code>IS NOT NULL</code>, <code>COALESCE</code>.</li>
+          </ul>
+        </div>
+        <div>
+          <h4>Ojo con</h4>
+          <ul class="warn">
+            <li>Comillas simples para valores; dobles para identificadores.</li>
+            <li><code>NULL</code> no se compara con <code>=</code>.</li>
+            <li><code>NOT IN</code> con NULL puede devolver vacío.</li>
+          </ul>
+        </div>
+      </div>
+<pre><code><span class="kw">SELECT</span> nombre, COALESCE(ciudad, <span class="str">'sin dato'</span>) <span class="kw">AS</span> ciudad
+<span class="kw">FROM</span> estudiantes
+<span class="kw">WHERE</span> fecha_nacimiento <span class="kw">BETWEEN</span> <span class="str">'2000-01-01'</span> <span class="kw">AND</span> <span class="str">'2005-12-31'</span>
+<span class="kw">ORDER BY</span> nombre
+<span class="kw">LIMIT</span> 10 <span class="kw">OFFSET</span> 0;</code></pre>
+    </article>
+
+    <article class="topic pending" data-status="pending">
+      <div class="topic-head"><span class="num">10</span><h3>JOINs</h3><span class="badge pending">Pendiente</span></div>
+      <p class="lead">Combinar tablas por su clave, no por coincidencias de números.</p>
+      <div class="grid">
+        <div>
+          <h4>Conceptos clave</h4>
+          <ul>
+            <li><code>INNER JOIN</code>, <code>LEFT</code>, <code>RIGHT</code>, <code>FULL</code>, <code>CROSS</code>, <code>SELF JOIN</code>.</li>
+            <li>Filtrar en <code>ON</code> vs en <code>WHERE</code> cambia el resultado en los outer joins.</li>
+            <li>Un <code>LEFT JOIN</code> conserva las filas sin pareja (con NULL).</li>
+          </ul>
+        </div>
+        <div>
+          <h4>Ojo con</h4>
+          <ul class="warn">
+            <li>JOIN sin condición → producto cartesiano gigante.</li>
+            <li>Filtro del lado derecho en <code>WHERE</code> convierte el LEFT en INNER.</li>
+            <li>Emparejar FK con PK, nunca <code>id = id</code>.</li>
+          </ul>
+        </div>
+      </div>
+<pre><code><span class="cmt">-- todos los cursos, tengan o no profesor</span>
+<span class="kw">SELECT</span> c.nombre <span class="kw">AS</span> curso, p.nombre <span class="kw">AS</span> profesor
+<span class="kw">FROM</span> cursos c
+<span class="kw">LEFT JOIN</span> profesores p <span class="kw">ON</span> p.id = c.id_profesor
+<span class="kw">ORDER BY</span> curso;</code></pre>
+    </article>
+
+    <article class="topic pending" data-status="pending">
+      <div class="topic-head"><span class="num">11</span><h3>Agregación</h3><span class="badge pending">Pendiente</span></div>
+      <p class="lead">Resumir muchas filas en grupos con totales y promedios.</p>
+      <div class="grid">
+        <div>
+          <h4>Conceptos clave</h4>
+          <ul>
+            <li><code>COUNT</code>, <code>SUM</code>, <code>AVG</code>, <code>MIN</code>, <code>MAX</code>.</li>
+            <li><code>GROUP BY</code> y <code>HAVING</code> (filtra grupos, no filas).</li>
+            <li><code>COUNT(*)</code> vs <code>COUNT(columna)</code>.</li>
+            <li>Se puede agrupar por varias columnas.</li>
+          </ul>
+        </div>
+        <div>
+          <h4>Ojo con</h4>
+          <ul class="warn">
+            <li><code>GROUP BY</code> incompleto: columnas sin agrupar ni agregar.</li>
+            <li><code>WHERE</code> no filtra agregados; para eso es <code>HAVING</code>.</li>
+            <li><code>AVG</code> ignora NULL (el promedio puede sorprender).</li>
+          </ul>
+        </div>
+      </div>
+<pre><code><span class="kw">SELECT</span> c.nombre <span class="kw">AS</span> curso,
+       <span class="kw">COUNT</span>(*) <span class="kw">AS</span> inscritos,
+       <span class="kw">ROUND</span>(<span class="kw">AVG</span>(m.nota), 2) <span class="kw">AS</span> promedio
+<span class="kw">FROM</span> matriculas m
+<span class="kw">JOIN</span> cursos c <span class="kw">ON</span> c.id = m.id_curso
+<span class="kw">GROUP BY</span> c.id, c.nombre
+<span class="kw">HAVING</span> <span class="kw">COUNT</span>(*) &gt;= 3
+<span class="kw">ORDER BY</span> promedio <span class="kw">DESC</span>;</code></pre>
+    </article>
+
+    <article class="topic pending" data-status="pending">
+      <div class="topic-head"><span class="num">12</span><h3>Subconsultas y CTEs</h3><span class="badge pending">Pendiente</span></div>
+      <p class="lead">Consultas dentro de consultas y nombres reutilizables con <code>WITH</code>.</p>
+      <div class="grid">
+        <div>
+          <h4>Conceptos clave</h4>
+          <ul>
+            <li>Subconsulta <b>escalar</b> (devuelve un valor).</li>
+            <li><code>IN</code>, <code>NOT IN</code>, <code>EXISTS</code>, <code>NOT EXISTS</code>.</li>
+            <li>Subconsultas <b>correlacionadas</b>: dependen de la fila exterior.</li>
+            <li><code>WITH</code> (CTE) y CTEs múltiples.</li>
+          </ul>
+        </div>
+        <div>
+          <h4>Ojo con</h4>
+          <ul class="warn">
+            <li><code>NOT IN</code> con NULL: si la subconsulta trae NULL, no devuelve nada. Usar <code>NOT EXISTS</code>.</li>
+            <li>Subconsultas correlacionadas lentas si no hay índice.</li>
+          </ul>
+        </div>
+      </div>
+<pre><code><span class="kw">WITH</span> promedio <span class="kw">AS</span> (
+  <span class="kw">SELECT</span> id_curso, <span class="kw">AVG</span>(nota) <span class="kw">AS</span> prom
+  <span class="kw">FROM</span> matriculas
+  <span class="kw">GROUP BY</span> id_curso
+)
+<span class="kw">SELECT</span> c.nombre, p.prom
+<span class="kw">FROM</span> cursos c
+<span class="kw">JOIN</span> promedio p <span class="kw">ON</span> p.id_curso = c.id
+<span class="kw">WHERE</span> p.prom &gt; 4;</code></pre>
+    </article>
+
+    <article class="topic pending" data-status="pending">
+      <div class="topic-head"><span class="num">13</span><h3>Vistas, índices y funciones ventana</h3><span class="badge pending">Pendiente</span></div>
+      <p class="lead">Guardar consultas, acelerar búsquedas y numerar filas sin perder el detalle.</p>
+      <div class="grid">
+        <div>
+          <h4>Conceptos clave</h4>
+          <ul>
+            <li><code>CREATE VIEW</code> y vistas materializadas.</li>
+            <li>Índices B-tree: cuándo sí y cuándo no.</li>
+            <li><code>EXPLAIN</code> y <code>EXPLAIN ANALYZE</code>.</li>
+            <li><code>ROW_NUMBER</code>, <code>RANK</code>, <code>DENSE_RANK</code>.</li>
+            <li><code>OVER (PARTITION BY ... ORDER BY ...)</code>.</li>
+          </ul>
+        </div>
+        <div>
+          <h4>Ojo con</h4>
+          <ul class="warn">
+            <li>Índices en columnas de baja selectividad (casi no sirven).</li>
+            <li>Cada índice encarece los INSERT/UPDATE.</li>
+            <li>FK sin índice → joins y borrados lentos.</li>
+            <li><code>RANK</code> salta números en empates; <code>DENSE_RANK</code> no.</li>
+          </ul>
+        </div>
+      </div>
+<pre><code><span class="kw">SELECT</span> id_curso, id_estudiante, nota,
+       <span class="kw">RANK</span>() <span class="kw">OVER</span> (<span class="kw">PARTITION BY</span> id_curso <span class="kw">ORDER BY</span> nota <span class="kw">DESC</span>) <span class="kw">AS</span> puesto
+<span class="kw">FROM</span> matriculas;
+
+<span class="kw">EXPLAIN ANALYZE</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> matriculas <span class="kw">WHERE</span> id_curso = 3;</code></pre>
+    </article>
+
+    <article class="topic pending" data-status="pending">
+      <div class="topic-head"><span class="num">14</span><h3>Transacciones y concurrencia</h3><span class="badge pending">Pendiente</span></div>
+      <p class="lead">Todo o nada: ACID, aislamiento y bloqueos.</p>
+      <div class="grid">
+        <div>
+          <h4>Conceptos clave</h4>
+          <ul>
+            <li><b>ACID:</b> atomicidad, consistencia, aislamiento, durabilidad.</li>
+            <li><code>BEGIN</code>, <code>COMMIT</code>, <code>ROLLBACK</code>, <code>SAVEPOINT</code>.</li>
+            <li>Niveles de aislamiento y anomalías de concurrencia.</li>
+            <li>Bloqueos y deadlocks.</li>
+          </ul>
+        </div>
+        <div>
+          <h4>Ojo con</h4>
+          <ul class="warn">
+            <li>Olvidar <code>COMMIT</code>: la transacción queda abierta y bloquea.</li>
+            <li>Transacciones largas: más locks y más riesgo de deadlock.</li>
+            <li>Probar siempre con <code>BEGIN ... ROLLBACK</code> antes de un cambio masivo.</li>
+          </ul>
+        </div>
+      </div>
+<pre><code><span class="kw">BEGIN</span>;
+<span class="kw">UPDATE</span> cuentas <span class="kw">SET</span> saldo = saldo - 100 <span class="kw">WHERE</span> id = 1;
+<span class="kw">UPDATE</span> cuentas <span class="kw">SET</span> saldo = saldo + 100 <span class="kw">WHERE</span> id = 2;
+<span class="kw">COMMIT</span>;  <span class="cmt">-- o ROLLBACK si algo no cuadra</span></code></pre>
+    </article>
+  </section>
+
+  <!-- ================= FASE 4 ================= -->
+  <section id="fase4">
+    <div class="sec-head"><h2>Fase 4 — Cierre</h2><span class="phase-tag">0 / 1 completado</span></div>
+    <p class="sec-sub">El proyecto integrador junta todo: diseño, normalización, SQL, índices y transacciones.</p>
+
+    <article class="topic pending" data-status="pending">
+      <div class="topic-head"><span class="num">15</span><h3>Proyecto integrador</h3><span class="badge pending">Pendiente</span></div>
+      <p class="lead">Un sistema completo, documentado y defendido. Dominio candidato: gestión académica universitaria.</p>
+      <ul class="check">
+        <li>Diseño ER del dominio elegido</li>
+        <li>Normalización justificada (3FN/BCNF)</li>
+        <li>Script DDL completo</li>
+        <li>Datos de prueba (seed) coherentes</li>
+        <li>15 consultas de negocio</li>
+        <li>Al menos 3 vistas y 3 índices justificados</li>
+        <li>Al menos 2 transacciones</li>
+        <li>Documentación y defensa</li>
+      </ul>
+      <div class="callout warn">
+        <b>Consejo:</b> el ER de universidad que ya tienes es el punto de partida. No lo rediseñes desde cero: mapléalo, normalízalo y constrúyelo.
+      </div>
+    </article>
+  </section>
+
+  <!-- ================= ER UNIVERSIDAD ================= -->
+  <section id="er-uni">
+    <div class="sec-head"><h2>ER universidad — modelo de referencia</h2><span class="phase-tag">tema 4</span></div>
+    <p class="sec-sub">El diagrama que cerramos en la sesión 5. Es la base del proyecto final.</p>
+
+    <div class="er-box">
+      <div class="grid">
+        <div>
+          <h4>Entidades</h4>
+          <ul>
+            <li><b>DEPARTAMENTO</b>: id_departamento (PK), nombre (UNIQUE), edificio.</li>
+            <li><b>PROFESOR</b>: id_profesor (PK), nombre (compuesto), email (UNIQUE).</li>
+            <li><b>ESTUDIANTE</b>: id_estudiante (PK), nombre (compuesto), email (UNIQUE), fecha_nacimiento, edad (derivado), dirección (compuesto), teléfonos (multivaluado).</li>
+            <li><b>CURSO</b>: id_curso (PK), codigo (UNIQUE), nombre, creditos.</li>
+            <li><b>TELÉFONO</b> (débil): número (clave parcial), tipo. PK = (id_estudiante, número).</li>
+          </ul>
+        </div>
+        <div>
+          <h4>Relaciones</h4>
+          <ul>
+            <li><b>DEPARTAMENTO 1:N PROFESOR</b> — profesor total, departamento parcial.</li>
+            <li><b>PROFESOR 1:N CURSO</b> — ambos parciales (curso puede no tener profe).</li>
+            <li><b>ESTUDIANTE N:M CURSO</b> — atributos: semestre, nota, fecha_matricula. Ambos parciales.</li>
+            <li><b>CURSO N:M CURSO</b> — recursiva de prerrequisitos. Ambos parciales.</li>
+            <li><b>ESTUDIANTE 1:N TELÉFONO</b> — teléfono con participación total.</li>
+          </ul>
+        </div>
+      </div>
+<pre><code>[DEPARTAMENTO] ─1──&lt;tiene&gt;──N─ [PROFESOR] ─1──&lt;dicta&gt;──N─ [CURSO]
+                                                              │
+                                             ┌──N──&lt;se matricula&gt;──M── [ESTUDIANTE] ─1──&lt;tiene&gt;──N─ {TELÉFONO}
+                                             │
+                                          [CURSO] ─N──&lt;es prerrequisito de&gt;──N─ [CURSO]</code></pre>
+      <div class="callout">
+        <b>Traducción a tablas:</b> 1:N → FK en el lado N · N:M → tabla puente · multivaluado → tabla aparte · débil → PK compuesta. Las tablas <code>matriculas</code> y <code>prerrequisitos</code> existen por el N:M, no porque sean entidades.
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= ERRORES ================= -->
+  <section id="errores">
+    <div class="sec-head"><h2>Errores propios registrados</h2><span class="phase-tag">15 aprendizajes</span></div>
+    <p class="sec-sub">Cada error documentado es un tema que ya no se repite. Esta es la lista de trampas del curso.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Tema</th><th>Error</th><th>Corrección</th></tr></thead>
+        <tbody>
+          <tr><td>Fundamentos</td><td>Confundir base de datos con SGBD y <code>psql</code> con el SGBD.</td><td class="fix">La base son los datos; PostgreSQL es el SGBD; <code>psql</code> es el cliente.</td></tr>
+          <tr><td>NULL</td><td>Decir que <code>COUNT(*)</code> "no da todos los datos".</td><td class="fix"><code>COUNT(*)</code> cuenta filas; <code>COUNT(col)</code> ignora NULL.</td></tr>
+          <tr><td>FK</td><td>Creer que <code>cursos.id_profesor</code> es <code>CASCADE</code>.</td><td class="fix">Es <code>SET NULL</code>: el curso sigue y la FK queda nula.</td></tr>
+          <tr><td>JOIN</td><td>Escribir <code>JOIN</code> sin <code>ON</code>.</td><td class="fix">Producto cartesiano = <code>CROSS JOIN</code>; unir por clave = <code>JOIN ... ON</code>.</td></tr>
+          <tr><td>JOIN</td><td>Emparejar por <code>id = id</code> en vez de FK ↔ PK.</td><td class="fix">No falla, pero miente. Verificar contenido, no solo el conteo.</td></tr>
+          <tr><td>Sintaxis</td><td><code>CROSS JOIN ... ON</code> y <code>estudiante</code> por <code>estudiantes</code>.</td><td class="fix">Revisar nombres exactos con <code>\dt</code>.</td></tr>
+          <tr><td>σ / π</td><td>Mapear σ/π a <code>SELECT</code> y <code>FROM</code>.</td><td class="fix">σ = <code>WHERE</code>; π = lista de columnas del <code>SELECT</code>.</td></tr>
+          <tr><td>JOIN vs UNION</td><td>Decir que JOIN es "unión con condición".</td><td class="fix">JOIN combina horizontal; UNION apila vertical.</td></tr>
+          <tr><td>Entorno</td><td>Ejecutar <code>psql</code> sin cargar <code>env.sh</code>.</td><td class="fix">Cluster en <code>localhost:5433</code>, usuario <code>juan</code>.</td></tr>
+          <tr><td>ER</td><td>Cruzar dominios entre datasets.</td><td class="fix">Fijar el dominio antes de hablar de cardinalidad.</td></tr>
+          <tr><td>ER / claves</td><td>Identificar por nombre y usar el barcode global como discriminador.</td><td class="fix">Débil = id del dueño + clave parcial que reinicia por dueño.</td></tr>
+          <tr><td>ER / entidades</td><td>Modelar MATRÍCULA y PRERREQUISITO como entidades.</td><td class="fix">Son relaciones N:M; la tabla puente es consecuencia del mapeo.</td></tr>
+          <tr><td>ER / multivaluado</td><td>"Estudiante con varios cursos" como atributo multivaluado.</td><td class="fix">CURSO es entidad (N:M); multivaluado son valores: teléfonos, correos.</td></tr>
+          <tr><td>ER / participación</td><td>Invertir total/parcial en profesor ↔ departamento y profesor ↔ curso.</td><td class="fix">FK <code>NOT NULL</code> ↔ total; nullable ↔ parcial.</td></tr>
+          <tr><td>ER / diagrama</td><td>Escribir "1:1" por lado en la cardinalidad.</td><td class="fix">Cada lado lleva un símbolo: 1 o N. N:M = N en ambos.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout warn" style="margin-top:18px">
+      <b>Repaso pendiente:</b> participación total/parcial con la regla FK <code>NOT NULL</code> ↔ total. Se repasa al arrancar el tema 5.
+    </div>
+  </section>
+
+  <!-- ================= COMANDOS ================= -->
+  <section id="comandos">
+    <div class="sec-head"><h2>Comandos y datasets del curso</h2><span class="phase-tag">entorno local</span></div>
+    <p class="sec-sub">Cluster local sin sudo en <code>localhost:5433</code>, usuario <code>juan</code>, base <code>curso_bd</code>.</p>
+
+    <div class="grid">
+      <div class="topic done" style="border-left-color:var(--cyan)">
+        <h4 style="margin-top:0">Arranque de cada sesión</h4>
+<pre style="margin-top:8px"><code>cd "/home/thejunax/Documentos/Etapa 5"
+./scripts/db_start.sh
+source scripts/env.sh
+
+psql -c "SELECT * FROM estudiantes LIMIT 5;"
+
+<span class="cmt"># diagnóstico</span>
+./scripts/db_status.sh
+<span class="cmt"># log</span>
+~/.local/share/curso_bd/postgres.log</code></pre>
+      </div>
+      <div class="topic done" style="border-left-color:var(--cyan)">
+        <h4 style="margin-top:0">Recarga completa</h4>
+<pre style="margin-top:8px"><code><span class="cmt"># crea base y carga los 3 datasets</span>
+./scripts/db_init.sh
+
+<span class="cmt"># o manual</span>
+psql -f datasets/universidad_schema.sql
+psql -f datasets/universidad_seed.sql</code></pre>
+      </div>
+    </div>
+
+    <div class="table-wrap" style="margin-top:16px">
+      <table>
+        <thead><tr><th>Dataset</th><th>Entidades / tablas</th><th>Relaciones clave</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Universidad</td>
+            <td>departamentos, profesores, estudiantes, cursos, matriculas, prerrequisitos</td>
+            <td>1:N departamento→profesor y profesor→curso; N:M estudiante↔curso y curso↔curso (recursiva).</td>
+          </tr>
+          <tr>
+            <td>Biblioteca</td>
+            <td>socios, libros, autores, ejemplares, prestamos</td>
+            <td>1:N autor→libro y libro→ejemplar; N:M socio↔ejemplar con atributos (fechas, estado).</td>
+          </tr>
+          <tr>
+            <td>Tienda</td>
+            <td>clientes, pedidos, productos, proveedores, categorias, detalle_pedido</td>
+            <td>1:N cliente→pedido y proveedor/categoría→producto; N:M pedido↔producto con precio_unitario.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ================= RECURSOS ================= -->
+  <section id="recursos">
+    <div class="sec-head"><h2>Recursos</h2><span class="phase-tag">referencia</span></div>
+    <div class="grid">
+      <div class="topic done" style="border-left-color:var(--purple)">
+        <h4 style="margin-top:0">Documentación y herramientas</h4>
+        <ul>
+          <li><a href="https://www.postgresql.org/docs/16/" target="_blank" rel="noopener">PostgreSQL 16 — documentación oficial</a></li>
+          <li><a href="https://dbdiagram.io" target="_blank" rel="noopener">dbdiagram.io</a> — diagramas ER con código</li>
+          <li><a href="https://app.diagrams.net" target="_blank" rel="noopener">draw.io</a> — diagramas libres</li>
+          <li><a href="https://www.postgresql.org/docs/16/sql-syntax.html" target="_blank" rel="noopener">Sintaxis SQL en PostgreSQL</a></li>
+        </ul>
+      </div>
+      <div class="topic done" style="border-left-color:var(--purple)">
+        <h4 style="margin-top:0">Archivos del curso</h4>
+        <ul>
+          <li><code>RUTA_BD.md</code> — bitácora y estado de la ruta</li>
+          <li><code>datasets/</code> — esquemas y seeds de los 3 dominios</li>
+          <li><code>ejercicios/</code> — ejercicios por tema (01 a 14)</li>
+          <li><code>guias/guia_select_from.md</code> — guía de bolsillo de SELECT</li>
+          <li><code>proyectos/proyecto_final.md</code> — enunciado del integrador</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Curso de Bases de Datos · PostgreSQL 16 · actualizado 2026-11-11</span>
+    <span>4 / 15 temas completados · siguiente: mapeo ER → relacional</span>
+  </div>
+</footer>
+
+<button class="to-top" id="toTop" title="Volver arriba">↑</button>
+
+<script>
+  // ---- Búsqueda con normalización de acentos ----
+  const norm = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  const q = document.getElementById('q');
+  const chips = Array.from(document.querySelectorAll('.chip'));
+  const topics = Array.from(document.querySelectorAll('.topic[data-status]'));
+  const count = document.getElementById('count');
+  let status = 'all';
+
+  function applyFilter(){
+    const term = norm(q.value.trim());
+    let visible = 0;
+    topics.forEach(t => {
+      const okStatus = status === 'all' || t.dataset.status === status;
+      const okText = !term || norm(t.textContent).includes(term);
+      const show = okStatus && okText;
+      t.style.display = show ? '' : 'none';
+      if (show) visible++;
+    });
+    count.textContent = visible + ' tema' + (visible === 1 ? '' : 's') + ' visible' + (visible === 1 ? '' : 's');
+  }
+
+  q.addEventListener('input', applyFilter);
+  chips.forEach(c => c.addEventListener('click', () => {
+    chips.forEach(x => x.classList.remove('active'));
+    c.classList.add('active');
+    status = c.dataset.status;
+    applyFilter();
+  }));
+
+  // atajo "/" para buscar
+  document.addEventListener('keydown', e => {
+    if (e.key === '/' && document.activeElement !== q){
+      e.preventDefault();
+      q.focus();
+    }
+    if (e.key === 'Escape' && document.activeElement === q){
+      q.value = '';
+      applyFilter();
+      q.blur();
+    }
+  });
+
+  // ---- Botón volver arriba ----
+  const toTop = document.getElementById('toTop');
+  window.addEventListener('scroll', () => {
+    toTop.classList.toggle('show', window.scrollY > 600);
+  });
+  toTop.addEventListener('click', () => window.scrollTo({top:0, behavior:'smooth'}));
+
+  applyFilter();
+</script>
+</body>
+</html>
